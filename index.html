@@ -17,20 +17,21 @@
   <div id="notices">載入中...</div>
 
   <script>
-    const sheetID = '1-nIeAbPXMzh2gtXSGH7dn0QKhgE4Ze7Y1BzzBxNYWp8'; // 替換成你複製後的 Google Sheets ID
-    const sheetName = 'Sheet1';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}`;
+    const sheetURL = 'https://opensheet.elk.sh/1-nIeAbPXMzh2gtXSGH7dn0QKhgE4Ze7Y1BzzBxNYWp8/Sheet1';
 
-    fetch(url)
-      .then(res => res.text())
+    fetch(sheetURL)
+      .then(response => response.json())
       .then(data => {
-        const json = JSON.parse(data.substr(47).slice(0, -2));
-        const rows = json.table.rows;
         const now = new Date();
         let html = '';
 
-        rows.forEach(row => {
-          const [category, title, content, pubDate, endDate] = row.c.map(cell => cell ? cell.v : '');
+        data.forEach(row => {
+          const category = row["分類"] || '';
+          const title = row["標題"] || '';
+          const content = row["內容"] || '';
+          const pubDate = row["發布日期"] || '';
+          const endDate = row["到期日期"] || '';
+
           const expireDate = new Date(endDate);
           if (expireDate >= now) {
             html += `
@@ -46,9 +47,9 @@
 
         document.getElementById('notices').innerHTML = html || '目前沒有有效公告。';
       })
-      .catch(err => {
+      .catch(error => {
+        console.error('讀取公告時發生錯誤：', error);
         document.getElementById('notices').innerText = '載入公告時發生錯誤。';
-        console.error(err);
       });
   </script>
 </body>
