@@ -1,58 +1,96 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社區電子布告欄（簡易版）</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社區電子布告欄</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 2em;
-      background-color: #fefefe;
-      color: #222;
-    }
-    h1 {
-      text-align: center;
-    }
-    .notice {
-      border-bottom: 1px solid #ccc;
-      padding: 1em 0;
-    }
-    .title {
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    .category {
-      font-size: 0.95em;
-      color: #555;
-      margin-bottom: 0.3em;
-    }
-    .content {
-      margin-top: 0.5em;
-    }
-    .date {
-      font-size: 0.85em;
-      color: #888;
-      margin-top: 0.5em;
-    }
+    body { font-family: sans-serif; margin: 2em; background-color: #f9f9f9; }
+    .notice { background: white; border-left: 6px solid #4CAF50; padding: 1em; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .notice h3 { margin-top: 0; }
+    .category { font-weight: bold; color: #555; margin-bottom: 0.5em; }
+    .date { font-size: 0.9em; color: #888; margin-top: 0.5em; }
+    #offline-warning { color: red; font-size: 0.9em; margin-bottom: 0.5em; display: none; }
+    #last-updated { font-size: 0.8em; color: #666; margin-bottom: 1.5em; display: none; }
   </style>
 </head>
 <body>
   <h1>社區電子布告欄</h1>
-  
-  <div class="notice">
-    <div class="category">【一般公告】</div>
-    <div class="title">布告欄測試</div>
-    <div class="content">4/2 測試布告欄</div>
-    <div class="date">發布：2025-04-02，有效至：2025-04-11</div>
-  </div>
+  <div id="offline-warning">※ 網路異常，顯示快取公告內容</div>
+  <div id="last-updated"></div>
+  <div id="notices">載入中...</div>
 
-  <div class="notice">
-    <div class="category">【設施維護】</div>
-    <div class="title">健身房暫停開放</div>
-    <div class="content">本週五上午進行機械維護，暫停開放半天，敬請配合。</div>
-    <div class="date">發布：2025-04-01，有效至：2025-04-04</div>
-  </div>
+  <script>
+    const sheetURL = 'https://opensheet.elk.sh/1-nIeAbPXMzh2gtXSGH7dn0QKhgE4Ze7Y1BzzBxNYWp8/Sheet1';
 
+    function renderNotices(data, isOffline = false) {
+      const now = new Date();
+      let html = '';
+
+      data.forEach(row => {
+        const category = row["分類"] || '';
+        const title = row["標題"] || '';
+        const content = row["內容"] || '';
+        const pubDate = row["發布日期"] || '';
+        const endDate = row["到期日期"] || '';
+        const expireDate = new Date(Date.parse(endDate));
+
+        if (!isNaN(expireDate) && expireDate >= now) {
+          html += `
+            <div class="notice">
+              <div class="category">【${category}】</div>
+              <h3>${title}</h3>
+              <div>${content}</div>
+              <div class="date">發布：${pubDate}，有效至：${endDate}</div>
+            </div>
+          `;
+        }
+      });
+
+      if (isOffline) {
+        document.getElementById('offline-warning').style.display = 'block';
+      }
+
+      const lastUpdate = localStorage.getItem('lastUpdated');
+      if (lastUpdate) {
+        const timeStr = new Date(parseInt(lastUpdate)).toLocaleString();
+        const updateElem = document.getElementById('last-updated');
+        updateElem.textContent = `最後更新時間：${timeStr}`;
+        updateElem.style.display = 'block';
+      }
+
+      document.getElementById('notices').innerHTML = html || '目前沒有有效公告。';
+    }
+
+    function loadNotices(retry = 0) {
+      fetch(sheetURL)
+        .then(response => response.json())
+        .then(data => {
+          localStorage.setItem('cachedNotices', JSON.stringify(data));
+          localStorage.setItem('lastUpdated', Date.now().toString());
+          renderNotices(data);
+        })
+        .catch(error => {
+          console.error('讀取公告失敗（第 ' + (retry + 1) + ' 次）：', error);
+          if (retry < 3) {
+            setTimeout(() => loadNotices(retry + 1), 3000);
+          } else {
+            const cached = localStorage.getItem('cachedNotices');
+            if (cached) {
+              renderNotices(JSON.parse(cached), true);
+            } else {
+              document.getElementById('notices').innerText = '公告載入失敗，且無備援資料。';
+            }
+          }
+        });
+    }
+
+    loadNotices();
+
+    // 每 10 分鐘自動重新整理頁面
+    setInterval(() => {
+      location.reload();
+    }, 10 * 60 * 1000);
+  </script>
 </body>
 </html>
