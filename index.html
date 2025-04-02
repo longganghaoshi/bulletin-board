@@ -5,13 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>社區電子布告欄</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; background-color: #f9f9f9; }
-    .notice { background: white; border-left: 6px solid #4CAF50; padding: 1em; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .notice h3 { margin-top: 0; }
-    .category { font-weight: bold; color: #555; margin-bottom: 0.5em; }
-    .date { font-size: 0.9em; color: #888; margin-top: 0.5em; }
-    #offline-warning { color: red; font-size: 0.9em; margin-bottom: 0.5em; display: none; }
-    #last-updated { font-size: 0.8em; color: #666; margin-bottom: 1.5em; display: none; }
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+      background-color: #f0f4f8;
+      color: #333;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    #offline-warning {
+      color: #d9534f;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      display: none;
+    }
+    #last-updated {
+      font-size: 0.85em;
+      color: #888;
+      margin-bottom: 1em;
+      display: none;
+    }
+    .notice {
+      background-color: #fff;
+      border-left: 6px solid #00796b;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .category {
+      font-weight: bold;
+      color: #00796b;
+      margin-bottom: 0.25em;
+    }
+    .notice h3 {
+      margin: 0 0 0.5em 0;
+    }
+    .date {
+      font-size: 0.9em;
+      color: #666;
+    }
   </style>
 </head>
 <body>
