@@ -25,6 +25,8 @@
         const now = new Date();
         let html = '';
 
+        console.log("載入公告資料:", data);
+
         data.forEach(row => {
           const category = row["分類"] || '';
           const title = row["標題"] || '';
@@ -32,8 +34,9 @@
           const pubDate = row["發布日期"] || '';
           const endDate = row["到期日期"] || '';
 
-          const expireDate = new Date(endDate);
-          if (expireDate >= now) {
+          const expireDate = new Date(Date.parse(endDate));
+
+          if (!isNaN(expireDate) && expireDate >= now) {
             html += `
               <div class="notice">
                 <div class="category">【${category}】</div>
@@ -42,6 +45,8 @@
                 <div class="date">發布：${pubDate}，有效至：${endDate}</div>
               </div>
             `;
+          } else {
+            console.log(`公告已過期或日期無效：${title}, 到期：${endDate}`);
           }
         });
 
