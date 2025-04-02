@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社區電子布告欄</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; background-color: #f9f9f9; }
+    .notice { background: white; border-left: 6px solid #4CAF50; padding: 1em; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .notice h3 { margin-top: 0; }
+    .category { font-weight: bold; color: #555; margin-bottom: 0.5em; }
+    .date { font-size: 0.9em; color: #888; margin-top: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>社區電子布告欄</h1>
+  <div id="notices">載入中...</div>
+
+  <script>
+    const sheetID = '1uA7sl06hftpx9ES_x0QHF1MGp7Bdvq0DtQxPUmbLczQ'; // 替換成你複製後的 Google Sheets ID
+    const sheetName = '工作表1';
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const now = new Date();
+        let html = '';
+
+        rows.forEach(row => {
+          const [category, title, content, pubDate, endDate] = row.c.map(cell => cell ? cell.v : '');
+          const expireDate = new Date(endDate);
+          if (expireDate >= now) {
+            html += `
+              <div class="notice">
+                <div class="category">【${category}】</div>
+                <h3>${title}</h3>
+                <div>${content}</div>
+                <div class="date">發布：${pubDate}，有效至：${endDate}</div>
+              </div>
+            `;
+          }
+        });
+
+        document.getElementById('notices').innerHTML = html || '目前沒有有效公告。';
+      })
+      .catch(err => {
+        document.getElementById('notices').innerText = '載入公告時發生錯誤。';
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
