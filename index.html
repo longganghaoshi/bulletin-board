@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+<script>
+  const ua = navigator.userAgent.toLowerCase();
+  const isOld = ua.includes("android 4") || ua.includes("smart-tv") || ua.includes("linux arm") || !window.fetch || !window.localStorage;
+
+  if (isOld) {
+    location.href = './plain.html';
+  }
+</script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
